@@ -1,0 +1,13 @@
+{
+  "name": "kajota-mesh",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Monorepo for Kajota Mesh — on-chain co-sell commission split (Chainlink + Base) for the Kajota social-commerce marketplace",
+  "scripts": {
+    "compile": "pnpm --filter @kajota-mesh/contracts compile",
+    "test": "pnpm --filter @kajota-mesh/contracts test",
+    "test:contracts": "pnpm --filter @kajota-mesh/contracts test",
+    "clean": "pnpm --filter @kajota-mesh/contracts clean"
+  },
+  "packageManager": "pnpm@9.9.0"
+}

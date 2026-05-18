@@ -1,0 +1,22 @@
+{
+  "name": "@kajota-mesh/contracts",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "On-chain registry + escrow for Kajota co-sell commission splits",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "clean": "hardhat clean"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "hardhat": "^3.0.0",
+    "typescript": "^5.6.0",
+    "viem": "^2.21.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.1.0"
+  }
+}
