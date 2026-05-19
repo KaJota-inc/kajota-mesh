@@ -1,0 +1,11 @@
+{
+  "name": "@kajota-mesh/attestation",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Chainlink Functions source + deploy helpers — off-chain attestation that a Kajota order has shipped, called from CosellEscrow's release path",
+  "scripts": {
+    "lint:source": "echo 'source.js runs inside the Chainlink DON sandbox — eslint that with the chainlink-functions ruleset locally if needed'",
+    "test": "echo 'attestation tests live in @kajota-mesh/contracts/test/Verifier.test.ts (next commit)'"
+  }
+}

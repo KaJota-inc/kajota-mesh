@@ -7,11 +7,14 @@
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "clean": "hardhat clean"
+    "clean": "hardhat clean",
+    "deploy:base-sepolia": "hardhat run --network baseSepolia scripts/deploy.ts",
+    "deploy:mantle-sepolia": "hardhat run --network mantleSepolia scripts/deploy.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
     "@types/node": "^22.10.0",
+    "dotenv": "^16.4.5",
     "hardhat": "^3.0.0",
     "typescript": "^5.6.0",
     "viem": "^2.21.0"
