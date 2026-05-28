@@ -27,6 +27,11 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
 const USDC_ADDRESS_BY_CHAIN_ID: Record<number, string | undefined> = {
+  // Ethereum Sepolia — Circle's official testnet USDC. Hardcoded
+  // fallback so the deploy works without an extra .env entry.
+  11155111:
+    process.env.USDC_ETHEREUM_SEPOLIA ??
+    "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
   84532: process.env.USDC_BASE_SEPOLIA, // Base Sepolia
   5003: process.env.USDC_MANTLE_SEPOLIA, // Mantle Sepolia
 };
@@ -37,7 +42,13 @@ async function main() {
   const [deployer] = await viem.getWalletClients();
 
   const chainId = await publicClient.getChainId();
-  const chainName = (await publicClient.getChain()).name;
+  const CHAIN_NAMES: Record<number, string> = {
+    11155111: "Ethereum Sepolia",
+    84532: "Base Sepolia",
+    5003: "Mantle Sepolia",
+  };
+  const chainName =
+    publicClient.chain?.name ?? CHAIN_NAMES[chainId] ?? `chain-${chainId}`;
 
   console.log(`\nKajota Mesh — deploy on ${chainName} (chainId ${chainId})`);
   console.log(`Deployer: ${deployer.account.address}`);

@@ -1,0 +1,10 @@
+{
+  "chainId": 11155111,
+  "chainName": "Sepolia",
+  "deployer": "0xe10cff27c99074cd44c64bed1b000226442524a4",
+  "usdc": "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+  "releaseAuth": "0xe10cff27c99074cd44c64bed1b000226442524a4",
+  "registry": "0xfce6bd68d8d6f858d447f537d206c1e354b44315",
+  "escrow": "0x599869cef2e4c52e2c9074caaf8f9fb0cb191776",
+  "deployedAt": "2026-05-28T16:11:05.153Z"
+}

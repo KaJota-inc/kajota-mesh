@@ -50,6 +50,17 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
+    // Ethereum Sepolia — the chain Google Cloud's Web3 faucet drips
+    // to by default. Chainlink Functions is supported here
+    // (DON id: fun-ethereum-sepolia-1), so the full Mesh flow runs
+    // the same as on Base Sepolia.
+    sepolia: {
+      type: "http",
+      chainType: "l1",
+      url: process.env.SEPOLIA_RPC ?? "https://ethereum-sepolia-rpc.publicnode.com",
+      accounts: deployerAccounts,
+      chainId: 11155111,
+    },
     baseSepolia: {
       type: "http",
       chainType: "l1",
