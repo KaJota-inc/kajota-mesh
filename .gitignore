@@ -5,6 +5,20 @@ node_modules/
 .env.local
 .env.*.local
 
+# Per-hack env files: `.env.<hack>` stays local, `.env.<hack>.example`
+# is committed as the template (see HACKS.md).
+.env.*
+!.env.example
+!.env.*.example
+
+# Per-hack secret storage: directories are tracked via `.gitkeep` but
+# their contents (service-account JSON, deployer keys, etc.) stay
+# local. Pattern uses `*/*` (not `**/*`) so the parent dir isn't
+# itself excluded — git can't re-include a file under an excluded
+# parent dir.
+secrets/*/*
+!secrets/*/.gitkeep
+
 # Hardhat
 cache/
 artifacts/
