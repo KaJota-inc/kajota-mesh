@@ -85,9 +85,28 @@ Verified on Arbiscan: links above resolve to the deployed bytecode + ABI.
 - **Coach Agent v2:** [`KaJota-inc/kajota-coach`](https://github.com/KaJota-inc/kajota-coach)
 - **Concierge buy-side agent + mobile:** [`KaJota-inc/kajota-mobile-backend`](https://github.com/KaJota-inc/kajota-mobile-backend) + [`KaJota-inc/kajota`](https://github.com/KaJota-inc/kajota) (`hackathon/arbitrum-london`)
 
+## Live on-chain happy path (Jun 14, 2026, Arbitrum Sepolia)
+
+Reproducible via `./scripts/arbitrum-demo.sh` against the live contracts. One full Coach→Concierge→Mesh cycle with 1 USDC deposited and atomically split 10%/90% — Arbiscan-verifiable:
+
+| Step | Actor | Action | Arbiscan |
+|---|---|---|---|
+| 1 | Wholesaler (Coach) | `CosellRegistry.register` — publishes the listing on-chain | [tx](https://sepolia.arbiscan.io/tx/0xe0a272cd898917d18afb3126d7f8aebdc6fa09b511c6590f4070388b6624c881) |
+| 2 | Buyer (Concierge) | `USDC.approve` — grants the escrow spend allowance | [tx](https://sepolia.arbiscan.io/tx/0xdd026528ffd09823a7d19dc5307276a1a4d711daf04d298c5b2cdad7cec12a96) |
+| 3 | Buyer (Concierge) | `CosellEscrow.deposit` — moves USDC into escrow | [tx](https://sepolia.arbiscan.io/tx/0x99955fe772f2d04a1352536f80d17740f88439d06e72f3dbe287e5ecbd919a44) |
+| 4 | `releaseAuth` (Mesh) | `CosellEscrow.release` — atomic 10%/90% split, no human in the loop | [tx](https://sepolia.arbiscan.io/tx/0xc96a1075e2ba8768a8d6abaf9f5b49fbc296409cf6be76b2c3e8ef06cc4646a8) |
+
+Balance delta (USDC, 6-decimal):
+
+| Wallet | Before | After | Δ |
+|---|---|---|---|
+| Buyer `0xB15E…7380` | 20.000000 | 19.000000 | −1.000000 |
+| Coseller `0x33cd…eb42` | 0.000000 | 0.100000 | +0.100000 (10% commission) |
+| Wholesaler `0xe10C…24A4` | 0.000000 | 0.900000 | +0.900000 (90% remainder) |
+
 ## Demo video
 
-`<youtube/loom link>` — shows Coach drafting a listing → wholesaler confirming → on-chain registry mint on Arbitrum Sepolia (link to Arbiscan tx) → buyer triggering Concierge → escrow deposit → release → auto-split visible on Arbiscan.
+`<youtube/loom link>` — terminal screen-record of the same `scripts/arbitrum-demo.sh` run paired with Arbiscan tabs showing each tx confirm + the auto-split balances change.
 
 ## Running locally
 
