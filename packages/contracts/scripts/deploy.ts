@@ -34,6 +34,11 @@ const USDC_ADDRESS_BY_CHAIN_ID: Record<number, string | undefined> = {
     "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
   84532: process.env.USDC_BASE_SEPOLIA, // Base Sepolia
   5003: process.env.USDC_MANTLE_SEPOLIA, // Mantle Sepolia
+  // Arbitrum Sepolia — Circle's official testnet USDC. Hardcoded
+  // fallback so the deploy works without an extra .env entry.
+  421614:
+    process.env.USDC_ARBITRUM_SEPOLIA ??
+    "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
 };
 
 async function main() {
@@ -46,6 +51,7 @@ async function main() {
     11155111: "Ethereum Sepolia",
     84532: "Base Sepolia",
     5003: "Mantle Sepolia",
+    421614: "Arbitrum Sepolia",
   };
   const chainName =
     publicClient.chain?.name ?? CHAIN_NAMES[chainId] ?? `chain-${chainId}`;
