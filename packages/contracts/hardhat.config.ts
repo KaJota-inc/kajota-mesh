@@ -90,6 +90,13 @@ const config: HardhatUserConfig = {
       chainId: 421614,
     },
   },
+  // Etherscan V2 unified API — one key from etherscan.io/arbiscan.io
+  // covers every chain id. Required for `pnpm hardhat verify`.
+  verify: {
+    etherscan: {
+      apiKey: process.env.ARBISCAN_API_KEY ?? "",
+    },
+  },
 };
 
 export default config;
