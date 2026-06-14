@@ -81,6 +81,18 @@ The Kajota app continues to be the merchandising layer; Mesh is the settlement l
 
 Full manifest: [`packages/contracts/deployments/11155111.json`](packages/contracts/deployments/11155111.json).
 
+### Arbitrum Sepolia (chainId 421614)
+
+Live for the Arbitrum Open House London buildathon (Jun 14, 2026). Same deployer + same nonce 0 → same contract addresses as Ethereum Sepolia (CREATE is deterministic).
+
+| Contract | Address |
+|---|---|
+| `CosellRegistry` | [`0xfce6bd68d8d6f858d447f537d206c1e354b44315`](https://sepolia.arbiscan.io/address/0xfce6bd68d8d6f858d447f537d206c1e354b44315) |
+| `CosellEscrow` | [`0x599869cef2e4c52e2c9074caaf8f9fb0cb191776`](https://sepolia.arbiscan.io/address/0x599869cef2e4c52e2c9074caaf8f9fb0cb191776) |
+| `USDC` (Circle) | [`0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d`](https://sepolia.arbiscan.io/address/0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d) |
+
+Full manifest: [`packages/contracts/deployments/421614.json`](packages/contracts/deployments/421614.json).
+
 ### Base Sepolia (chainId 84532)
 
 Deploy script ready; not yet deployed. Run `pnpm --filter @kajota-mesh/contracts deploy:base-sepolia` with a funded EOA.

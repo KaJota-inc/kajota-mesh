@@ -1,0 +1,10 @@
+{
+  "chainId": 421614,
+  "chainName": "Arbitrum Sepolia",
+  "deployer": "0xe10cff27c99074cd44c64bed1b000226442524a4",
+  "usdc": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+  "releaseAuth": "0xe10cff27c99074cd44c64bed1b000226442524a4",
+  "registry": "0xfce6bd68d8d6f858d447f537d206c1e354b44315",
+  "escrow": "0x599869cef2e4c52e2c9074caaf8f9fb0cb191776",
+  "deployedAt": "2026-06-14T20:39:55.429Z"
+}
