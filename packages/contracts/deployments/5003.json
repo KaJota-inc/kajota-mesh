@@ -1,0 +1,10 @@
+{
+  "chainId": 5003,
+  "chainName": "Mantle Sepolia Testnet",
+  "deployer": "0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6",
+  "usdc": "0x6F0EaF790309e05C550bD7bbdB36ADF6db978f4d",
+  "releaseAuth": "0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6",
+  "registry": "0x33a1029d5e43e0a4eb1e9397881390d28f02da7e",
+  "escrow": "0xd02dbd6bf8152e9884d645e61ba9297c3ca0dc8a",
+  "deployedAt": "2026-06-15T19:42:57.341Z"
+}

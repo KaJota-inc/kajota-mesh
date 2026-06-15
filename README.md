@@ -28,6 +28,18 @@
 
 Deployed 2026-05-28 from `0xe10cff27c99074cd44c64bed1b000226442524a4`. Full deployment record at [`packages/contracts/deployments/11155111.json`](packages/contracts/deployments/11155111.json).
 
+### Deployed contract addresses (Mantle Sepolia, chainId 5003)
+
+Cross-deployed 2026-06-15 (post-submission) from `0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6` — same EVM-equivalent bytecode, one command (`deploy:mantle-sepolia`).
+
+| Contract | Address |
+|---|---|
+| `CosellRegistry` | [`0x33a1029d5e43e0a4eb1e9397881390d28f02da7e`](https://explorer.sepolia.mantle.xyz/address/0x33a1029d5e43e0a4eb1e9397881390d28f02da7e) |
+| `CosellEscrow` | [`0xd02dbd6bf8152e9884d645e61ba9297c3ca0dc8a`](https://explorer.sepolia.mantle.xyz/address/0xd02dbd6bf8152e9884d645e61ba9297c3ca0dc8a) |
+| `MockUSDC` (testnet settlement token) | [`0x6F0EaF790309e05C550bD7bbdB36ADF6db978f4d`](https://explorer.sepolia.mantle.xyz/address/0x6F0EaF790309e05C550bD7bbdB36ADF6db978f4d) |
+
+Full record at [`packages/contracts/deployments/5003.json`](packages/contracts/deployments/5003.json).
+
 ### Why Ethereum Sepolia (and not Mantle Sepolia)
 
 The Phase 2 track judges the combined Coach + Mesh story end-to-end. The Coach agent v2 is the primary on-chain caller; Mesh is the settlement layer it mints into. Both repos use the same Sepolia testnet so the live demo runs through one chain, not two. The contracts are EVM-equivalent — porting to Mantle Sepolia is a single `pnpm --filter @kajota-mesh/contracts deploy:mantle-sepolia` away (see [`packages/contracts/scripts/deploy.ts`](packages/contracts/scripts/deploy.ts)).
@@ -142,7 +154,7 @@ pnpm --filter @kajota-mesh/contracts test
 - [x] `CosellShipmentVerifier.sol` (Chainlink Functions consumer) + tests
 - [x] Deployed to Ethereum Sepolia + records pinned at [`deployments/11155111.json`](packages/contracts/deployments/11155111.json)
 - [x] Coach Agent v2 `publishListing` tool wired to mint on-chain (see [kajota-coach](https://github.com/KaJota-inc/kajota-coach))
-- [ ] Cross-deploy to Mantle Sepolia for breadth points
+- [x] Cross-deployed to Mantle Sepolia (chainId 5003) — addresses above (2026-06-15, post-submission)
 - [ ] Demo video URL (added on submission day)
 
 ## License
