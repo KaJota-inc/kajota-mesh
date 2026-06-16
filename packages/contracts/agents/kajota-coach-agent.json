@@ -1,0 +1,23 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Kajota Coach Agent",
+  "description": "An AI commerce agent for African micro-distributors (cosellers). Snap a product photo and it analyzes the image, matches a category, anchors a fair price from comparable listings, drafts a description, and translates it to the seller's language — then proposes an on-chain co-sell listing settled trustlessly via the Kajota Mesh contracts (CosellRegistry + CosellEscrow) on Mantle. The agent never submits a transaction itself; the seller signs with their own embedded wallet, so commission terms become enforceable by math, not bookkeeping.",
+  "image": "https://kajota.io/logo.png",
+  "services": [
+    { "name": "web", "endpoint": "https://kajota.io" },
+    {
+      "name": "coach-agent-chat",
+      "endpoint": "https://kajota-mobile-backend-2.onrender.com/kajota-mobile-backend/ai/coach/agent/chat",
+      "version": "v2"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [
+    {
+      "agentId": 0,
+      "agentRegistry": "eip155:5003:0x8004A818BFB912233c491871b3d84c89A494BD9e"
+    }
+  ],
+  "supportedTrust": ["reputation", "crypto-economic"]
+}
