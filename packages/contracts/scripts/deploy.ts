@@ -87,10 +87,14 @@ async function main() {
 
   // ---- 2. CosellEscrow --------------------------------------------
   console.log("Deploying CosellEscrow …");
+  // arbiter (dispute resolver) + owner (rotation + pause) default to the
+  // deployer; rotate to multisigs post-deploy via setArbiter / transferOwnership.
   const escrow = await viem.deployContract("CosellEscrow", [
     usdcAddress,
     registry.address,
     releaseAuth,
+    deployer.account.address as Address, // arbiter
+    deployer.account.address as Address, // owner
   ]);
   console.log(`  → CosellEscrow   @ ${escrow.address}\n`);
 
