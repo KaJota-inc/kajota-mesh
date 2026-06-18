@@ -4,7 +4,12 @@
   "deployer": "0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6",
   "usdc": "0x6F0EaF790309e05C550bD7bbdB36ADF6db978f4d",
   "releaseAuth": "0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6",
-  "registry": "0x33a1029d5e43e0a4eb1e9397881390d28f02da7e",
-  "escrow": "0xd02dbd6bf8152e9884d645e61ba9297c3ca0dc8a",
-  "deployedAt": "2026-06-15T19:42:57.341Z"
+  "registry": "0x33A1029d5E43E0A4eb1E9397881390D28f02DA7e",
+  "escrow": "0xe02b16c439e7596F7A032ACe5E9ff42c2ecd3167",
+  "deployedAt": "2026-06-15T19:42:57.341Z",
+  "arbiter": "0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6",
+  "owner": "0x682a3a435b139c4a3e4d0b1c1d7ae89a4f3cf9f6",
+  "prevEscrow": "0xd02dbd6bf8152e9884d645e61ba9297c3ca0dc8a",
+  "escrowFeatures": "confirmReceipt + dispute/arbiter + RELEASE_GRACE + pausable",
+  "upgradedAt": "2026-06-18T17:25:23.772Z"
 }
