@@ -63,6 +63,8 @@ async function main() {
     getAddress(usdc.address),
     getAddress(registry.address),
     releaseAuth,
+    releaseAuth, // arbiter (defaults to deployer; rotate post-deploy)
+    releaseAuth, // owner (defaults to deployer; transferOwnership post-deploy)
   ]);
   console.log(`  → CosellEscrow   @ ${escrow.address}\n`);
 

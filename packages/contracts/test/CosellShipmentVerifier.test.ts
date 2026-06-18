@@ -38,6 +38,16 @@ describe("CosellShipmentVerifier", async () => {
   const same = (a: string, b: string) =>
     assert.equal(getAddress(a), getAddress(b));
 
+  // CosellEscrow.release is locked for RELEASE_GRACE (2 days) after a
+  // deposit, so the operator/verifier release path must wait it out.
+  const advanceTime = async (seconds: number) => {
+    await publicClient.transport.request({
+      method: "evm_increaseTime",
+      params: [seconds],
+    });
+    await publicClient.transport.request({ method: "evm_mine", params: [] });
+  };
+
   const SOURCE = "// inline-js placeholder for tests";
   const SUB_ID = 1n;
   const CALLBACK_GAS = 300_000;
@@ -59,6 +69,8 @@ describe("CosellShipmentVerifier", async () => {
       usdc.address,
       registry.address,
       deployer.account.address,
+      deployer.account.address, // arbiter
+      deployer.account.address, // owner (rotates releaseAuth below)
     ]);
 
     const verifier = await viem.deployContract("CosellShipmentVerifier", [
@@ -222,6 +234,8 @@ describe("CosellShipmentVerifier", async () => {
         coseller.account.address,
       ]);
 
+      // Wait out the operator-release grace window before the DON callback.
+      await advanceTime(2 * 24 * 60 * 60 + 1);
       await router.write.fulfill([requestId, response, "0x"]);
 
       const wholesalerAfter = await usdc.read.balanceOf([

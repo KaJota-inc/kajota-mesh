@@ -4,6 +4,8 @@ pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 import {CosellRegistry} from "./CosellRegistry.sol";
 
@@ -13,35 +15,48 @@ import {CosellRegistry} from "./CosellRegistry.sol";
  *         between wholesaler and co-seller on release, using the
  *         commission terms locked in {CosellRegistry}.
  *
- * Flow:
- *   1. Buyer pays USDC into this contract via `deposit(listingId)`.
- *      Contract creates an `Escrowed` record and emits Deposited.
- *      A unique `depositId` is returned so the buyer / Kajota
- *      backend can reference it later.
- *   2. Off-chain: Kajota delivers the product. The shipment-confirmed
- *      event is attested to on-chain via a Chainlink Functions
- *      callback (or, for the v0 demo, via a privileged `releaseAuth`
- *      address — a multisig in prod).
- *   3. `release(depositId)` reads the listing's commissionBps, splits
- *      the held USDC, and pushes the two transfers atomically.
+ * Settlement is enforced by the BUYER, not by Kajota's bookkeeping:
  *
- * Buyer-protection:
- *   - `refund(depositId)` returns the full amount to the buyer if
- *     the wholesaler hasn't released within `REFUND_DELAY`
- *     (default 14 days). Prevents indefinite lock-up if the
- *     wholesaler ghosts.
+ *   1. Buyer pays USDC in via `deposit(listingId)`.
+ *   2a. Happy path — `confirmReceipt(depositId)`: the buyer signs to
+ *       release the split. This is the trustless path: the funds move
+ *       because the *buyer* confirmed receipt, not because a server
+ *       said "shipped".
+ *   2b. Buyer goes quiet — `release(depositId)`: the operator
+ *       (`releaseAuth`, a Chainlink Functions consumer / multisig)
+ *       may release, but ONLY after `RELEASE_GRACE` has elapsed and
+ *       ONLY while the deposit is still `Pending`. The grace window
+ *       guarantees the buyer time to confirm or dispute first, so a
+ *       compromised operator key can't instant-drain fresh deposits.
+ *   2c. Buyer disputes — `dispute(depositId)`: moves the deposit to
+ *       `Disputed`, which freezes the operator `release` path. An
+ *       independent `arbiter` then `resolveDispute(...)` to the seller
+ *       (split) or the buyer (refund). This is on-chain dispute
+ *       arbitration.
+ *   3. Buyer self-refund — `refund(depositId)`: after `REFUND_DELAY`
+ *      with no release, the buyer recovers the full amount (works from
+ *      both `Pending` and `Disputed`, so an un-resolved dispute can
+ *      never lock funds forever).
  *
- * Reentrancy: protected via OZ ReentrancyGuard.
- * USDC quirks: handled via OZ SafeERC20 (USDC's return-value
- * semantics differ from a vanilla ERC20).
+ * Operator-key hardening:
+ *   - role separation: `owner` (rotation + circuit-breaker), distinct
+ *     from `releaseAuth` (operator) and `arbiter` (disputes). The
+ *     operator key no longer rotates itself — a compromised operator
+ *     can't entrench itself or swap in the arbiter.
+ *   - `RELEASE_GRACE` rate-limits the operator path.
+ *   - `pause()` lets `owner` freeze new deposits + the operator
+ *     release path during an incident, while leaving the buyer's
+ *     confirm / dispute / refund and the arbiter's resolution live.
  *
- * @dev Hackathon target: Mantle Turing Test Phase 2 (Jun 15) +
- *      AWS Activate Web3. Sister contract: {CosellRegistry}.
+ * Reentrancy: OZ ReentrancyGuard. USDC quirks: OZ SafeERC20.
+ *
+ * @dev Hackathon target: Mantle Turing Test Phase 2. Sister contract:
+ *      {CosellRegistry}.
  */
-contract CosellEscrow is ReentrancyGuard {
+contract CosellEscrow is ReentrancyGuard, Ownable, Pausable {
     using SafeERC20 for IERC20;
 
-    enum State { Pending, Released, Refunded }
+    enum State { Pending, Released, Refunded, Disputed }
 
     struct Escrowed {
         bytes32 listingId;
@@ -58,22 +73,30 @@ contract CosellEscrow is ReentrancyGuard {
     /// for who-pays-whom-what-percent.
     CosellRegistry public immutable registry;
 
-    /// @notice Address authorized to call `release()`. In production,
-    /// a Chainlink Functions consumer wrapping a Kajota
-    /// shipment-confirmed callback; for the v0 demo, a multisig
-    /// representing the Kajota ops team.
+    /// @notice Operator allowed to call `release()` after the grace
+    /// window. A Chainlink Functions consumer / Kajota ops multisig.
+    /// Rotated only by `owner` — see {setReleaseAuth}.
     address public releaseAuth;
+
+    /// @notice Independent dispute resolver. Decides a `Disputed`
+    /// deposit in favour of the seller (split) or buyer (refund).
+    /// Should be a multisig / DAO distinct from `releaseAuth`.
+    address public arbiter;
 
     /// @notice After this many seconds without release, the buyer
     /// can self-refund. Default 14 days.
     uint64 public constant REFUND_DELAY = 14 days;
 
-    /// @notice depositId → Escrowed record. depositId =
-    /// keccak256(listingId, buyer, grossAmount, block.timestamp, nonce)
+    /// @notice The operator `release()` path is locked for this long
+    /// after a deposit, guaranteeing the buyer a window to confirm
+    /// receipt or dispute first. The buyer's own `confirmReceipt` has
+    /// no such delay.
+    uint64 public constant RELEASE_GRACE = 2 days;
+
+    /// @notice depositId → Escrowed record.
     mapping(bytes32 => Escrowed) private _deposits;
 
-    /// @notice Monotonic nonce to keep depositIds unique even when
-    /// the same buyer deposits the same listing+amount in one block.
+    /// @notice Monotonic nonce to keep depositIds unique.
     uint256 private _depositNonce;
 
     // ----- events -----
@@ -100,57 +123,74 @@ contract CosellEscrow is ReentrancyGuard {
         uint256 grossAmount
     );
 
+    /// @notice How a Released deposit was triggered, for off-chain
+    /// auditing: buyer confirmation vs operator vs arbiter.
+    enum ReleaseTrigger { BuyerConfirmed, Operator, Arbiter }
+
+    event ReleaseTriggered(bytes32 indexed depositId, ReleaseTrigger trigger);
+
+    event Disputed(bytes32 indexed depositId, address indexed buyer);
+
+    event DisputeResolved(
+        bytes32 indexed depositId,
+        address indexed arbiter,
+        bool releasedToSeller
+    );
+
     event ReleaseAuthUpdated(address indexed previous, address indexed next);
+    event ArbiterUpdated(address indexed previous, address indexed next);
 
     // ----- errors -----
 
     error InvalidUsdc();
     error InvalidRegistry();
     error InvalidReleaseAuth();
+    error InvalidArbiter();
     error ZeroAmount();
     error ListingNotActive(bytes32 listingId);
     error DepositNotFound(bytes32 depositId);
     error DepositNotPending(bytes32 depositId);
+    error DepositNotDisputed(bytes32 depositId);
     error NotReleaseAuth(address caller);
+    error NotArbiter(address caller);
     error NotBuyer(address caller, address expected);
     error RefundTooEarly(uint64 depositedAt, uint64 refundUnlockAt);
+    error ReleaseTooEarly(uint64 depositedAt, uint64 releaseUnlockAt);
+    error NotRefundable(bytes32 depositId);
 
     // ----- constructor -----
 
     constructor(
         IERC20 _usdc,
         CosellRegistry _registry,
-        address _releaseAuth
-    ) {
+        address _releaseAuth,
+        address _arbiter,
+        address _owner
+    ) Ownable(_owner) {
         if (address(_usdc) == address(0)) revert InvalidUsdc();
         if (address(_registry) == address(0)) revert InvalidRegistry();
         if (_releaseAuth == address(0)) revert InvalidReleaseAuth();
+        if (_arbiter == address(0)) revert InvalidArbiter();
         usdc = _usdc;
         registry = _registry;
         releaseAuth = _releaseAuth;
+        arbiter = _arbiter;
     }
 
-    // ----- core -----
+    // ----- core: deposit -----
 
     /**
      * @notice Buyer deposits USDC against an existing active listing.
-     *
-     * Caller must have first approved this contract for at least
-     * `grossAmount` of USDC.
-     *
-     * @param listingId    Listing returned by CosellRegistry.register.
-     * @param grossAmount  Total USDC (6-decimal) the buyer is paying.
-     * @return depositId   Reference for later release / refund.
+     * Caller must have approved this contract for `grossAmount` first.
      */
     function deposit(bytes32 listingId, uint256 grossAmount)
         external
         nonReentrant
+        whenNotPaused
         returns (bytes32 depositId)
     {
         if (grossAmount == 0) revert ZeroAmount();
 
-        // The registry call will revert with ListingNotFound if the
-        // listingId is bogus — we just check active here.
         CosellRegistry.Listing memory l = registry.getListing(listingId);
         if (!l.active) revert ListingNotActive(listingId);
 
@@ -180,29 +220,132 @@ contract CosellEscrow is ReentrancyGuard {
         emit Deposited(depositId, listingId, msg.sender, grossAmount);
     }
 
+    // ----- core: release paths -----
+
     /**
-     * @notice Release a deposit's funds — splits gross by the
-     *         listing's commissionBps between wholesaler and coseller.
-     *
-     * @dev Only callable by `releaseAuth`. In production this is a
-     *      Chainlink Functions consumer that has just verified the
-     *      shipment via Kajota's signed attestation endpoint.
+     * @notice Buyer confirms receipt and releases the split. THE
+     *         trustless happy path — funds move on the buyer's own
+     *         signature, with no operator and no delay. Allowed from
+     *         `Pending` or `Disputed` (the buyer may voluntarily
+     *         resolve their own dispute in the seller's favour).
      */
-    function release(bytes32 depositId) external nonReentrant {
+    function confirmReceipt(bytes32 depositId) external nonReentrant {
+        Escrowed storage d = _deposits[depositId];
+        if (d.depositedAt == 0) revert DepositNotFound(depositId);
+        if (d.state != State.Pending && d.state != State.Disputed) {
+            revert DepositNotPending(depositId);
+        }
+        if (msg.sender != d.buyer) revert NotBuyer(msg.sender, d.buyer);
+
+        _payout(depositId, d, ReleaseTrigger.BuyerConfirmed);
+    }
+
+    /**
+     * @notice Operator release for the buyer-went-quiet case. Gated to
+     *         `releaseAuth`, only while `Pending` (a dispute freezes
+     *         this path), only after `RELEASE_GRACE`, and only while
+     *         not paused.
+     *
+     * @dev This is the fallback, not the primary path. The grace
+     *      window + dispute freeze + pause are what stop a compromised
+     *      operator key from draining the book.
+     */
+    function release(bytes32 depositId)
+        external
+        nonReentrant
+        whenNotPaused
+    {
         if (msg.sender != releaseAuth) revert NotReleaseAuth(msg.sender);
 
         Escrowed storage d = _deposits[depositId];
         if (d.depositedAt == 0) revert DepositNotFound(depositId);
         if (d.state != State.Pending) revert DepositNotPending(depositId);
 
+        uint64 unlockAt = d.depositedAt + RELEASE_GRACE;
+        if (block.timestamp < unlockAt) {
+            revert ReleaseTooEarly(d.depositedAt, unlockAt);
+        }
+
+        _payout(depositId, d, ReleaseTrigger.Operator);
+    }
+
+    // ----- core: dispute -----
+
+    /**
+     * @notice Buyer opens a dispute, freezing the operator `release`
+     *         path until an arbiter resolves it. Only the buyer, only
+     *         while `Pending`.
+     */
+    function dispute(bytes32 depositId) external nonReentrant {
+        Escrowed storage d = _deposits[depositId];
+        if (d.depositedAt == 0) revert DepositNotFound(depositId);
+        if (d.state != State.Pending) revert DepositNotPending(depositId);
+        if (msg.sender != d.buyer) revert NotBuyer(msg.sender, d.buyer);
+
+        d.state = State.Disputed;
+        emit Disputed(depositId, d.buyer);
+    }
+
+    /**
+     * @notice Arbiter resolves a disputed deposit: either release the
+     *         split to the seller, or refund the buyer in full.
+     * @param releaseToSeller true → pay wholesaler+coseller; false →
+     *        refund the buyer.
+     */
+    function resolveDispute(bytes32 depositId, bool releaseToSeller)
+        external
+        nonReentrant
+    {
+        if (msg.sender != arbiter) revert NotArbiter(msg.sender);
+
+        Escrowed storage d = _deposits[depositId];
+        if (d.depositedAt == 0) revert DepositNotFound(depositId);
+        if (d.state != State.Disputed) revert DepositNotDisputed(depositId);
+
+        emit DisputeResolved(depositId, msg.sender, releaseToSeller);
+        if (releaseToSeller) {
+            _payout(depositId, d, ReleaseTrigger.Arbiter);
+        } else {
+            _refundTo(depositId, d);
+        }
+    }
+
+    // ----- core: refund -----
+
+    /**
+     * @notice Buyer self-refund after REFUND_DELAY without a release.
+     *         Works from `Pending` or `Disputed`, so an un-resolved
+     *         dispute can never lock the buyer's funds indefinitely.
+     */
+    function refund(bytes32 depositId) external nonReentrant {
+        Escrowed storage d = _deposits[depositId];
+        if (d.depositedAt == 0) revert DepositNotFound(depositId);
+        if (d.state != State.Pending && d.state != State.Disputed) {
+            revert NotRefundable(depositId);
+        }
+        if (msg.sender != d.buyer) revert NotBuyer(msg.sender, d.buyer);
+
+        uint64 unlockAt = d.depositedAt + REFUND_DELAY;
+        if (block.timestamp < unlockAt) {
+            revert RefundTooEarly(d.depositedAt, unlockAt);
+        }
+
+        _refundTo(depositId, d);
+    }
+
+    // ----- internal: money movement (CEI — state set before transfer) -----
+
+    function _payout(
+        bytes32 depositId,
+        Escrowed storage d,
+        ReleaseTrigger trigger
+    ) private {
         CosellRegistry.Listing memory l = registry.getListing(d.listingId);
         (uint256 cosellerShare, uint256 wholesalerShare) =
             registry.computeSplit(d.grossAmount, d.listingId);
 
         d.state = State.Released;
 
-        // Atomic order: pay wholesaler first (the larger share), then
-        // coseller. SafeERC20 reverts the whole tx on either failure.
         usdc.safeTransfer(l.wholesaler, wholesalerShare);
         usdc.safeTransfer(l.coseller, cosellerShare);
 
@@ -214,44 +357,43 @@ contract CosellEscrow is ReentrancyGuard {
             wholesalerShare,
             cosellerShare
         );
+        emit ReleaseTriggered(depositId, trigger);
     }
 
-    /**
-     * @notice Buyer self-refund after REFUND_DELAY has elapsed
-     *         without a release. Protects against indefinite lock-up.
-     */
-    function refund(bytes32 depositId) external nonReentrant {
-        Escrowed storage d = _deposits[depositId];
-        if (d.depositedAt == 0) revert DepositNotFound(depositId);
-        if (d.state != State.Pending) revert DepositNotPending(depositId);
-        if (msg.sender != d.buyer) revert NotBuyer(msg.sender, d.buyer);
-
-        uint64 unlockAt = d.depositedAt + REFUND_DELAY;
-        if (block.timestamp < unlockAt) {
-            revert RefundTooEarly(d.depositedAt, unlockAt);
-        }
-
+    function _refundTo(bytes32 depositId, Escrowed storage d) private {
         d.state = State.Refunded;
         uint256 amount = d.grossAmount;
-
         usdc.safeTransfer(d.buyer, amount);
         emit Refunded(depositId, d.buyer, amount);
     }
 
-    // ----- admin -----
+    // ----- admin (owner-gated; operator can no longer rotate itself) -----
 
-    /**
-     * @notice Update the release-auth address.
-     * @dev Only the *current* releaseAuth can rotate it (so a
-     *      compromised key can't lock the system out, but a
-     *      working one can hand off to a successor multisig).
-     */
-    function setReleaseAuth(address next) external {
-        if (msg.sender != releaseAuth) revert NotReleaseAuth(msg.sender);
+    /// @notice Rotate the operator address. Owner-only.
+    function setReleaseAuth(address next) external onlyOwner {
         if (next == address(0)) revert InvalidReleaseAuth();
         address prev = releaseAuth;
         releaseAuth = next;
         emit ReleaseAuthUpdated(prev, next);
+    }
+
+    /// @notice Rotate the arbiter address. Owner-only.
+    function setArbiter(address next) external onlyOwner {
+        if (next == address(0)) revert InvalidArbiter();
+        address prev = arbiter;
+        arbiter = next;
+        emit ArbiterUpdated(prev, next);
+    }
+
+    /// @notice Circuit breaker: freeze new deposits + the operator
+    /// release path during an incident. Buyer confirm/dispute/refund
+    /// and arbiter resolution stay live.
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     // ----- view -----
