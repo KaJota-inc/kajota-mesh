@@ -77,7 +77,16 @@ async function main() {
   ]);
   console.log(`  → CosellEscrow   @ ${escrow.address}\n`);
 
-  // ---- 4. Persist addresses ---------------------------------------
+  // ---- 4. ReceivableRegistry (SME trade-finance) ------------------
+  // controller (lifecycle authority) defaults to the deployer; rotate
+  // to the escrow/ops/scoring service post-deploy via setController.
+  console.log("Deploying ReceivableRegistry …");
+  const receivables = await viem.deployContract("ReceivableRegistry", [
+    releaseAuth,
+  ]);
+  console.log(`  → ReceivableRegistry @ ${receivables.address}\n`);
+
+  // ---- 5. Persist addresses ---------------------------------------
   const deploymentsDir = path.resolve(import.meta.dirname, "..", "deployments");
   mkdirSync(deploymentsDir, { recursive: true });
   const out = {
@@ -92,6 +101,7 @@ async function main() {
     releaseAuth,
     registry: getAddress(registry.address),
     escrow: getAddress(escrow.address),
+    receivableRegistry: getAddress(receivables.address),
     deployedAt: new Date().toISOString(),
   };
   const outPath = path.join(deploymentsDir, `${chainId}.json`);
