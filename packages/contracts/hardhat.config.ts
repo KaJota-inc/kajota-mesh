@@ -75,6 +75,18 @@ const config: HardhatUserConfig = {
       accounts: deployerAccounts,
       chainId: 5003,
     },
+    // Polygon PoS Amoy — Ignyte x Polygon Smart Commerce Challenge
+    // (SME Trade Finance track) target. Circle ships a canonical
+    // testnet USDC here (0x41E9…7582), so the escrow can settle in
+    // real USDC; the mock-USDC path (deploy-amoy.ts) stays available
+    // for faucet-free demos where we need to mint arbitrary balances.
+    polygonAmoy: {
+      type: "http",
+      chainType: "l1",
+      url: process.env.AMOY_RPC ?? "https://rpc-amoy.polygon.technology",
+      accounts: deployerAccounts,
+      chainId: 80002,
+    },
   },
 };
 

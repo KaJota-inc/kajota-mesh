@@ -34,6 +34,11 @@ const USDC_ADDRESS_BY_CHAIN_ID: Record<number, string | undefined> = {
     "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
   84532: process.env.USDC_BASE_SEPOLIA, // Base Sepolia
   5003: process.env.USDC_MANTLE_SEPOLIA, // Mantle Sepolia
+  // Polygon Amoy — Circle's canonical testnet USDC (6-decimal).
+  // Source: https://developers.circle.com/stablecoins/usdc-contract-addresses
+  80002:
+    process.env.USDC_POLYGON_AMOY ??
+    "0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582",
 };
 
 async function main() {
@@ -46,6 +51,7 @@ async function main() {
     11155111: "Ethereum Sepolia",
     84532: "Base Sepolia",
     5003: "Mantle Sepolia",
+    80002: "Polygon Amoy",
   };
   const chainName =
     publicClient.chain?.name ?? CHAIN_NAMES[chainId] ?? `chain-${chainId}`;
