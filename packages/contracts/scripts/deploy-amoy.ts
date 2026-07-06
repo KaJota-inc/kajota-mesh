@@ -86,6 +86,13 @@ async function main() {
   ]);
   console.log(`  → ReceivableRegistry @ ${receivables.address}\n`);
 
+  // ---- 4b. ScoreAttestation (on-chain trade-credit anchor) --------
+  // attester (score writer) defaults to the deployer = the scoring
+  // service wallet; add more via setAttester post-deploy.
+  console.log("Deploying ScoreAttestation …");
+  const scores = await viem.deployContract("ScoreAttestation", [releaseAuth]);
+  console.log(`  → ScoreAttestation @ ${scores.address}\n`);
+
   // ---- 5. Persist addresses ---------------------------------------
   const deploymentsDir = path.resolve(import.meta.dirname, "..", "deployments");
   mkdirSync(deploymentsDir, { recursive: true });
@@ -102,6 +109,7 @@ async function main() {
     registry: getAddress(registry.address),
     escrow: getAddress(escrow.address),
     receivableRegistry: getAddress(receivables.address),
+    scoreAttestation: getAddress(scores.address),
     deployedAt: new Date().toISOString(),
   };
   const outPath = path.join(deploymentsDir, `${chainId}.json`);
