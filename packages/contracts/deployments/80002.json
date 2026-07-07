@@ -1,0 +1,13 @@
+{
+  "chainId": 80002,
+  "chainName": "Polygon Amoy",
+  "deployer": "0x682A3a435B139C4A3E4D0b1C1d7ae89a4f3cF9f6",
+  "usdc": "0x6F0EaF790309e05C550bD7bbdB36ADF6db978f4d",
+  "usdcNote": "MockUSDC (6-decimal, mintable) landed during the initial deploy; reusable so the full stack only needs CosellEscrow + the two new contracts.",
+  "registry": "0x33A1029d5E43E0A4eb1E9397881390D28f02DA7e",
+  "note": "Partial: MockUSDC + CosellRegistry are live + verified functional on Amoy (from the first deploy runs). CosellEscrow, ReceivableRegistry, ScoreAttestation still pending a POL top-up. deploy:amoy:new merges RR + SA into this file.",
+  "reusable": {
+    "MockUSDC": "0x6F0EaF790309e05C550bD7bbdB36ADF6db978f4d",
+    "CosellRegistry": "0x33A1029d5E43E0A4eb1E9397881390D28f02DA7e"
+  }
+}
