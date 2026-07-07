@@ -14,6 +14,7 @@
     "deploy:mantle-sepolia:mock": "hardhat run --network mantleSepolia scripts/deploy-mantle.ts",
     "deploy:amoy": "hardhat run --network polygonAmoy scripts/deploy.ts",
     "deploy:amoy:mock": "hardhat run --network polygonAmoy scripts/deploy-amoy.ts",
+    "deploy:amoy:new": "hardhat run --network polygonAmoy scripts/deploy-amoy-new.ts",
     "demo:trade-finance": "hardhat run scripts/demo-trade-finance.ts",
     "deploy:escrow:mantle": "hardhat run --network mantleSepolia scripts/deploy-escrow.ts",
     "deploy:escrow:sepolia": "hardhat run --network sepolia scripts/deploy-escrow.ts"
