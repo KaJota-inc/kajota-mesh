@@ -75,6 +75,13 @@ const config: HardhatUserConfig = {
       accounts: deployerAccounts,
       chainId: 5003,
     },
+    xlayerTestnet: {
+      type: "http",
+      chainType: "l1",
+      url: process.env.XLAYER_TESTNET_RPC ?? "https://testrpc.xlayer.tech",
+      accounts: deployerAccounts,
+      chainId: 195,
+    },
   },
 };
 

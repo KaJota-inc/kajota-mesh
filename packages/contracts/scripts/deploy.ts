@@ -34,6 +34,7 @@ const USDC_ADDRESS_BY_CHAIN_ID: Record<number, string | undefined> = {
     "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
   84532: process.env.USDC_BASE_SEPOLIA, // Base Sepolia
   5003: process.env.USDC_MANTLE_SEPOLIA, // Mantle Sepolia
+  195: process.env.USDC_XLAYER_TESTNET, // XLayer testnet — set in .env from XLayer faucet
 };
 
 async function main() {
@@ -46,6 +47,7 @@ async function main() {
     11155111: "Ethereum Sepolia",
     84532: "Base Sepolia",
     5003: "Mantle Sepolia",
+    195: "XLayer Testnet",
   };
   const chainName =
     publicClient.chain?.name ?? CHAIN_NAMES[chainId] ?? `chain-${chainId}`;

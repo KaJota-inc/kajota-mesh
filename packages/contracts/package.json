@@ -10,7 +10,9 @@
     "clean": "hardhat clean",
     "deploy:sepolia": "hardhat run --network sepolia scripts/deploy.ts",
     "deploy:base-sepolia": "hardhat run --network baseSepolia scripts/deploy.ts",
-    "deploy:mantle-sepolia": "hardhat run --network mantleSepolia scripts/deploy.ts"
+    "deploy:mantle-sepolia": "hardhat run --network mantleSepolia scripts/deploy.ts",
+    "deploy:xlayer-testnet": "hardhat run --network xlayerTestnet scripts/deploy.ts",
+    "deploy:xlayer-testnet-with-mock": "hardhat run --network xlayerTestnet scripts/deploy-xlayer.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.0",
