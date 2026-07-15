@@ -160,3 +160,12 @@ pnpm --filter @kajota-mesh/contracts test
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
+<!-- kajota-hub-note -->
+## KaJota infrastructure
+
+Part of the [KaJota](https://github.com/KaJota-inc) project. KaJota's Render web
+services are consolidated onto a single always-on instance —
+**[kajota-hub](https://kajota-hub.onrender.com)** — to stop free-tier
+instance-hour exhaustion. If a service from this repo moved there, its live URL
+is now a path on the hub (e.g. `/coach-okx`, `/mesh-okx`, `/concierge`,
+`/slack`, `/mesh-skill`, `/witness`); see `HUB_MIGRATION.md` where present.
