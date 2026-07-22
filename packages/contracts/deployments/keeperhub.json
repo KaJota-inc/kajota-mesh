@@ -29,7 +29,24 @@
   },
   "templateSyntax": "functionArgs must be a JSON array literal string with templates inside string quotes — e.g. \"[\\\"{{@trigger-1:HTTP.depositId}}\\\"]\". Bare template resolutions fail JSON.parse.",
   "verifiedExecutions": {
-    "goodPath": "ci9xfvh43fxxjco2lphhv — 2026-07-22 — reverted with custom error because depositId was synthetic (0xdeadbeef...); tx composition, keeper signing, and RPC submission all worked",
-    "setReleaseAuth": "0x5ef9ae966c7a8c83ac7e20f05f373264cd2e196f429254640928d14a8d4b673c (Sepolia block 11326289)"
+    "setReleaseAuth": "0x5ef9ae966c7a8c83ac7e20f05f373264cd2e196f429254640928d14a8d4b673c (Sepolia block 11326289)",
+    "syntheticProbe": "ci9xfvh43fxxjco2lphhv — 2026-07-22 — reverted with 0x43e30ca8 (unknown-deposit) because depositId was synthetic; tx composition, keeper signing, and RPC submission all worked",
+    "endToEnd_2026_07_22": {
+      "productId": "KH-DEMO-1784730454",
+      "listingId": "0x22d917c51456ff35e7e678534cc6059d86659e0bfa926bf137e036cf6f9a7426",
+      "depositId": "0xe713d5a3eb6c0c3c247e3c86ad23696e006c6097de47d5fad9a303838f0f2d13",
+      "registerTx": "0x87a1b57237d7c09aae6f553ca80e6fe6d25d398dbe2b2bbf05094ec5b2806808",
+      "approveTx": "0xd43d3c83ed39c6929b2eac5ad3939655843d49179e7c90e3a6d92c669db973fb",
+      "depositTx": "0x490aa197817e8d652e26445635da37e437c24c903f55ca76c4de620dd9f83fd4",
+      "khExecutionId": "ayh0x4409maep14aek6yt",
+      "releaseTx": "0xc0acf8ed666ad5c990cc1f10f76baddbef7743b8784bd9989ff307fd300354b0",
+      "releaseBlock": 11327270,
+      "releaseFrom": "0xa17cb6adb58277e5b4a44b8c1ecb449bb6614e87",
+      "releaseGasUsed": 154384,
+      "khDurationMs": 14541,
+      "wholesalerShareUsdc": "0.085",
+      "cosellerShareUsdc": "0.015",
+      "note": "0x4c62...3bc2 releaseAuth is realized inside KH's proxy — the tx is submitted by a KH relayer EOA (0xa17cb6...) that internally issues release() such that msg.sender at the escrow equals releaseAuth. The Released event confirmed the split fired correctly."
+    }
   }
 }
