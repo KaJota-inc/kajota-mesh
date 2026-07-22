@@ -1,0 +1,35 @@
+{
+  "$schema": "keeperhub-workflow-record",
+  "purpose": "KeeperHub-scheduled CosellEscrow release — hackathon target: KeeperHub Agents Onchain (Aug 13, 2026)",
+  "workflowId": "1pyjp0c15z2h558jld8pn",
+  "workflowName": "Kajota CosellEscrow release",
+  "invokeEndpoint": "https://app.keeperhub.com/api/workflows/1pyjp0c15z2h558jld8pn/execute",
+  "invokeMethod": "POST",
+  "authHeader": "Authorization: Bearer <KEEPERHUB_ORG_API_KEY>",
+  "requestBody": {
+    "input": {
+      "depositId": "0x<32-byte hex from CosellEscrow.Deposited event>"
+    }
+  },
+  "keeperWallet": {
+    "type": "turnkey",
+    "address": "0x4c629AD055B3Ad07beF13b3b2f47E74aFE493bc2",
+    "integrationId": "xv7x4qalziyodoir6wyu4",
+    "role": "releaseAuth on CosellEscrow — set by tx 0x5ef9ae966c7a8c83ac7e20f05f373264cd2e196f429254640928d14a8d4b673c"
+  },
+  "targetChain": {
+    "chainId": 11155111,
+    "name": "Ethereum Sepolia",
+    "keeperhubChainUUID": "y2kycikh0jhz1wjchzz12"
+  },
+  "targetContract": {
+    "address": "0x599869cef2e4c52e2c9074caaf8f9fb0cb191776",
+    "function": "release(bytes32 depositId)",
+    "selector": "0x67d42a8b"
+  },
+  "templateSyntax": "functionArgs must be a JSON array literal string with templates inside string quotes — e.g. \"[\\\"{{@trigger-1:HTTP.depositId}}\\\"]\". Bare template resolutions fail JSON.parse.",
+  "verifiedExecutions": {
+    "goodPath": "ci9xfvh43fxxjco2lphhv — 2026-07-22 — reverted with custom error because depositId was synthetic (0xdeadbeef...); tx composition, keeper signing, and RPC submission all worked",
+    "setReleaseAuth": "0x5ef9ae966c7a8c83ac7e20f05f373264cd2e196f429254640928d14a8d4b673c (Sepolia block 11326289)"
+  }
+}
