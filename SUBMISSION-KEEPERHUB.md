@@ -14,7 +14,7 @@
 | Contracts + one-command demo | [github.com/KaJota-inc/kajota-mesh](https://github.com/KaJota-inc/kajota-mesh) |
 | Coach agent | [github.com/KaJota-inc/kajota-coach](https://github.com/KaJota-inc/kajota-coach) |
 | Hub deployment | [github.com/KaJota-inc/kajota-hub](https://github.com/KaJota-inc/kajota-hub) |
-| Demo video (50s) | *[replace with published URL after upload]* |
+| Demo video (~1m 51s, real voice + burnt subs) | [youtu.be/9m5n7ZaiZcg](https://youtu.be/9m5n7ZaiZcg) |
 
 ---
 
