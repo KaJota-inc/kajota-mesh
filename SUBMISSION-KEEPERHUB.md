@@ -2,7 +2,7 @@
 
 **One-liner.** A KeeperHub workflow schedules `CosellEscrow.release(depositId)` on Ethereum Sepolia. The keeper wallet is a Turnkey account whose authority the escrow contract accepts via EIP-7702. USDC splits between wholesaler and coseller in one keeper-signed tx, ~15 s after the merchant asks Coach for a release.
 
-**Prize track.** Grand Prize (execution weighted heavily) + Best Onboarding UX Improvement (dev-experience teardown in [DX teardown](#dx-teardown-for-the-onboarding-ux-bounty)).
+**Prize track.** Grand Prize (execution weighted heavily) **+ Best Onboarding UX Improvement** — claimed via a merged-scope PR to the KeeperHub OSS repo: **[KeeperHub/keeperhub#1857](https://github.com/KeeperHub/keeperhub/pull/1857)** (docs(web3): map UI labels to API field names for write-contract). See the [DX teardown section](#dx-teardown-for-the-onboarding-ux-bounty) below for the full teardown-with-proposed-fixes that seeded the PR.
 
 **Live artefacts.**
 
@@ -11,6 +11,7 @@
 | Live release tx | [sepolia.etherscan.io/tx/0xc0acf8…354b0](https://sepolia.etherscan.io/tx/0xc0acf8ed666ad5c990cc1f10f76baddbef7743b8784bd9989ff307fd300354b0) |
 | Live console (click "Fire release") | [kajota-hub.onrender.com/keeperhub](https://kajota-hub.onrender.com/keeperhub) |
 | KeeperHub workflow | [app.keeperhub.com/workflows/1pyjp0c15z2h558jld8pn](https://app.keeperhub.com/workflows/1pyjp0c15z2h558jld8pn) |
+| **OSS PR to KeeperHub (bounty)** | **[KeeperHub/keeperhub#1857](https://github.com/KeeperHub/keeperhub/pull/1857)** |
 | Contracts + one-command demo | [github.com/KaJota-inc/kajota-mesh](https://github.com/KaJota-inc/kajota-mesh) |
 | Coach agent | [github.com/KaJota-inc/kajota-coach](https://github.com/KaJota-inc/kajota-coach) |
 | Hub deployment | [github.com/KaJota-inc/kajota-hub](https://github.com/KaJota-inc/kajota-hub) |
@@ -98,7 +99,9 @@ Output prints all four tx hashes and the KH executionId, then polls until `statu
 
 ## DX teardown (for the Onboarding UX bounty)
 
-Two non-obvious traps we hit while integrating. Both cost real minutes; both are fixable with doc updates or a single validation-hint line. Recommend a PR to [`KeeperHub/keeperhub`](https://github.com/KeeperHub/keeperhub) covering these:
+**Submitted as PR: [KeeperHub/keeperhub#1857](https://github.com/KeeperHub/keeperhub/pull/1857)** — `docs(web3): map UI labels to API field names for write-contract`. 64 additions across `docs/api/workflows.md` (adds a generic `web3/write-contract` example next to the Aave one) and `docs/plugins/web3.md` (adds a UI-label ↔ API-field mapping table on the Write Contract entry). Docs-only, zero code changes, verified against live workflow `1pyjp0c15z2h558jld8pn`.
+
+The three traps we hit while integrating — each cost real minutes, each is fixable with a doc line or a validation hint. The PR addresses trap #1 and #2 directly; #3 is a natural follow-up (out of scope for a docs-only PR):
 
 ### 1. The `web3/write-contract` field names don't match `docs.keeperhub.com/plugins/web3`
 
