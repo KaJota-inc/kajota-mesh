@@ -4,6 +4,23 @@
 
 **Hackathon submissions:** Mantle Turing Test Phase 2 (Jun 15, 2026, combined with Coach Agent v2) · AWS Activate Web3.
 
+### KeeperHub — Agents Onchain 2026
+
+The KeeperHub submission lives on the **[`hackathon/keeperhub`](../../tree/hackathon/keeperhub)** branch, not `main`.
+
+- **[SUBMISSION-KEEPERHUB.md](../../blob/hackathon/keeperhub/SUBMISSION-KEEPERHUB.md)** — full write-up
+- **[KEEPERHUB-HANDOFF.md](../../blob/hackathon/keeperhub/KEEPERHUB-HANDOFF.md)** — pick-up-cold reference
+- Live console: **https://kajota-hub.onrender.com/keeperhub**
+- Merged docs PR into KeeperHub: **[KeeperHub/keeperhub#1857](https://github.com/KeeperHub/keeperhub/pull/1857)**
+- Autonomous release on Sepolia: **[0x7d42968f…4d1c215a](https://sepolia.etherscan.io/tx/0x7d42968fffeed4bceeb224c438aeed518aa38bf1c08b3856a9dc82d64d1c215a)**
+
+One command reproduces the release path:
+
+```bash
+git checkout hackathon/keeperhub && pnpm install
+pnpm --filter @kajota-mesh/contracts keeperhub-demo:sepolia
+```
+
 **Sister project:** [Kajota Coach Agent v2](https://github.com/KaJota-inc/kajota-coach) — multi-turn conversational agent that drafts co-sell listings. Mesh enforces those listings' commission terms on-chain.
 
 ---
